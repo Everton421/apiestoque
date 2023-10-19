@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model estoque_externo {
+  Id       Int     @id @default(autoincrement())
+  HOST     String? @default("") @db.VarChar(30)
+  PORTA    Int?    @default(0)
+  USER     String? @default("intersig") @db.VarChar(30)
+  PASSWORD String? @default("") @db.VarChar(30)
+  DATABASE String? @db.VarChar(30)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model lote_serie_setor {
+  SETOR      Int    @default(0) @db.UnsignedInt
+  LOTE_SERIE Int    @default(0) @db.UnsignedInt
+  ESTOQUE    Float? @default(0.000000) @db.Float
+  PRODUTO    Int?   @default(0) @db.UnsignedInt
+
+  @@id([SETOR, LOTE_SERIE])
+  @@index([LOTE_SERIE], map: "LOTE_SERIE")
+  @@index([PRODUTO, LOTE_SERIE], map: "PRODUTO")
+  @@index([PRODUTO, SETOR], map: "PRODUTO_2")
+  @@index([SETOR, PRODUTO, LOTE_SERIE], map: "SETOR")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mvto_interno {
+  CODIGO       Int      @id @default(autoincrement()) @db.UnsignedInt
+  SETOR        Int      @default(0) @db.UnsignedInt
+  PRODUTO      Int      @default(0) @db.UnsignedInt
+  ENT_SAI      String   @default("") @db.Char(1)
+  QUANTIDADE   Float    @default(0.000000) @db.Float
+  DATA         DateTime @default(dbgenerated("('0000-00-00')")) @db.Date
+  HORA         DateTime @default(dbgenerated("('00:00:00')")) @db.Time(0)
+  OPERADOR     Int      @default(0) @db.UnsignedInt
+  RESPONSAVEL  Int      @default(0) @db.UnsignedInt
+  HISTORICO    String   @default("") @db.VarChar(255)
+  CHAVE_MVTO   Int      @default(0) @db.UnsignedInt
+  CENTRO_CUSTO Int      @default(0) @db.UnsignedInt
+  VALOR_UNIT   Float    @default(0.000000) @db.Float
+  COD_REQUIS   Int      @default(0) @db.UnsignedInt
+
+  @@index([CHAVE_MVTO], map: "CHAVE_MVTO")
+  @@index([DATA, HORA], map: "DATA_HORA")
+  @@index([PRODUTO, SETOR], map: "PRODUTO")
+  @@index([SETOR, PRODUTO], map: "SETOR")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mvto_lotes_series {
+  MVTO_INTERNO Int   @default(0) @db.UnsignedInt
+  LOTE_SERIE   Int   @default(0) @db.UnsignedInt
+  QUANTIDADE   Float @default(0.000000) @db.Float
+
+  @@id([MVTO_INTERNO, LOTE_SERIE])
+  @@index([LOTE_SERIE], map: "LOTE_SERIE")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model prod_saldo {
+  CODIGO  Int    @id @default(0)
+  SKU     String @default("") @db.VarChar(50)
+  ESTOQUE Float  @default(0.000000) @db.Float
+
+  @@index([SKU], map: "SKU")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model prod_setor {
+  SETOR          Int       @default(0) @db.UnsignedInt
+  PRODUTO        Int       @default(0) @db.UnsignedInt
+  ESTOQUE        Float     @default(0.000000) @db.Float
+  LOCAL1_PRODUTO String?   @default("") @db.VarChar(20)
+  LOCAL2_PRODUTO String?   @default("") @db.VarChar(20)
+  LOCAL3_PRODUTO String?   @default("") @db.VarChar(20)
+  DATA_RECAD     DateTime? @db.DateTime(0)
+  LOCAL_PRODUTO  String?   @default("") @db.VarChar(20)
+
+  @@id([SETOR, PRODUTO])
+  @@index([PRODUTO, SETOR], map: "PRODUTO")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model setores {
+  CODIGO          Int           @id @default(autoincrement()) @db.UnsignedInt
+  NOME            String?       @db.VarChar(50)
+  PADRAO_VENDA    String        @default("") @db.Char(1)
+  PADRAO_COMPRA   String        @default("") @db.Char(1)
+  PADRAO_PRODUCAO String        @default("") @db.Char(1)
+  EST_ATUAL       String        @default("X") @db.Char(1)
+  DATA_CADASTRO   DateTime      @default(dbgenerated("('0000-00-00')")) @db.Date
+  ATIVO           setores_ATIVO @default(S)
+
+  @@index([EST_ATUAL], map: "EST_ATUAL")
+  @@index([NOME], map: "NOME")
+}
+
+enum setores_ATIVO {
+  S
+  N
+}
